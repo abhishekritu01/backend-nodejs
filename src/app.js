@@ -25,4 +25,16 @@ app.use(express.static("public"));
 // cookie parser is used to parse the cookies from the request headers and populate req.cookies 
 app.use(cookiParser());
 
+
+// ----------------routes imports----------------
+import {userRouter} from './routes/user.routes.js   ';
+
+
+// ------------- declear all routes here----------------
+app.use("/api/v1/users", userRouter);
+
+//http://localhost:8000/api/v1/users/register
+
+
+
 export { app};
