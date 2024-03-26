@@ -1,40 +1,34 @@
-import { urlencoded } from 'express';
 import express from 'express';
 import cors from 'cors';
-import cookiParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
+
 
 const app = express();
 
-// cors is used to allow the request from different origin to access the resources
+// cors is used to allow requests from different origins to access the resources
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true
-})); 
-
-//  express.json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object.
-app.use(express.json({ 
-    limit: "30kb"
 }));
 
-// urlencoded is a method inbuilt in express to recognize the incoming Request Object as strings or arrays. from url
-app.use(express.urlencoded({extended: true,limit: "30kb"}));
+// Parse JSON requests
+app.use(express.json({ limit: "30kb" }));
 
-// static files are served from the public folder
+// Parse URL-encoded requests
+app.use(express.urlencoded({ extended: true, limit: "30kb" }));
+
+// Serve static files from the public folder
 app.use(express.static("public"));
 
-// cookie parser is used to parse the cookies from the request headers and populate req.cookies 
-app.use(cookiParser());
+// Parse cookies from request headers
+app.use(cookieParser());
 
+// Import user routes
+import userRouter from  "../src/routes/user.routes.js";
 
-// ----------------routes imports----------------
-import {userRouter} from './routes/user.routes.js   ';
-
-
-// ------------- declear all routes here----------------
+// use of imported routes
 app.use("/api/v1/users", userRouter);
 
-//http://localhost:8000/api/v1/users/register
 
 
-
-export { app};
+export { app };
