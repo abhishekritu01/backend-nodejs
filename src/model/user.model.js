@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 
 const userSchema = new Schema({
-    name: {
+    username: {
         type: String,
         required: true,
         unique: true,
@@ -25,8 +25,8 @@ const userSchema = new Schema({
         trim: true,
         index: true
     },
-    avatar:{
-        type: String,  // Cloudinary image URL
+    avatar: {
+        type: String, // cloudinary url
         required: true,
     },
     coverImage:{
@@ -99,4 +99,4 @@ userSchema.methods.generateRefreshToken= function(){
     )
 }
 
-const User = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
