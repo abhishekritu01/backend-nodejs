@@ -95,7 +95,6 @@ const registerUser = asyncHandler(async (req, res) => {
     ));
 } );
 
-
 const loginUser = asyncHandler(async (req, res) => {
              // get user details from frontend
             //  user or email, password not empty
@@ -146,8 +145,6 @@ const loginUser = asyncHandler(async (req, res) => {
             },
             "User logged in successfully"
         ));
-
-
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -256,7 +253,6 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         .json(200,req.user,"User details fetched successfully" );
 });
 
-
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, username, email } = req.body;
 
@@ -279,7 +275,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200,user,"Account details updated successfully"))
 
 })
-
 
 const updateUserAvatar = asyncHandler(async (req,res) =>{
 
@@ -308,8 +303,10 @@ const updateUserAvatar = asyncHandler(async (req,res) =>{
         .status(200)
         .json(new ApiResponse(200,user,"avatar updated successfully "))
 
-})
+   //  delete old avatar from cloudinary
 
+
+})
 
 const updateUserCoverImage= asyncHandler(async (req,res) =>{
 
@@ -342,7 +339,81 @@ const updateUserCoverImage= asyncHandler(async (req,res) =>{
 })
 
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
 
+    const { username } = req.params;
+
+    if(!username.trim()){
+        throw new ApiError(400, "Username is required");
+    }
+
+  // aggregation pipeline to get user details and videos
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscription",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup:{
+                from: "subscription",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribeTo"
+            }
+        },
+        {
+            $addFields: {
+                subscriberCount: { $size: "$subscribers"},
+                subscribeToCount: { $size: "$subscribeTo"}
+            },
+            isSubscribed:{
+                $cond: {
+                    if: {
+                        $in: [req.user?._id, "$subscribers.subscriber"]  //in use in array or object both
+                    },
+                    then: true,
+                    else: false
+
+            }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                subscribeToCount: 1,
+                isSubscribed: 1,
+                email: 1,
+                createdAt: 1,
+
+            }
+        }
+    ])
+
+    if(!channel?.length){
+        throw new ApiError(404, "Channel not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, channel[0], "Channel details fetched successfully")
+        );
+
+})
 
 export {
     registerUser,
@@ -353,5 +424,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile
 }
