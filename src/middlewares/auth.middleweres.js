@@ -3,36 +3,31 @@ import jwt from 'jsonwebtoken';
 import { User } from '../model/user.model.js';
 import { ApiError } from '../utils/ApiError.js';
 
-export const verifyJwt=asyncHandler(async(req,res,next)=> {
+export const verifyJwt = asyncHandler(async (req, res, next) => {
+    // never use thorw inside try catch block because it will not be caught by the error handler middleware
+    try {
+        const token = req.cookies?.accessToken || req.headers.authorization?.replace("Bearer ", "");
 
-   try{
-       // const tocken = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
-       const tocken = req.cookies?.accessToken || req.headers("Authorization")?.replace("Bearer ","");
+        if (!token) {
+            return res.status(401).json({ message: "Unauthenticated" });
+        }
 
-       if(!tocken){
-           return res.status(401).json({message:"Unauthenticated"});
-       }
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-       const decodedToken = jwt.verify(tocken, process.env.ACCESS_TOKEN_SECRET, (err, user)=>{
-           if(err){
-               throw new ApiError(401, "Unauthenticated");
-           }
-           req.user = user;
-           next();
-       });
+        if (!decodedToken) {
+            res.send(401).json({ message: "Invalid Token" });
+        }
 
-       const user  = await User.findById(decodedToken._id)
-           .select("-password -refreshToken")
+        const user = await User.findById(decodedToken._id).select("-password -refreshToken");
 
-       if(!user){
-           throw new ApiError(404, "User not found");
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
+        }
 
-       }
-       req.user = user;
-       next();
-
-   }catch(error){
-       throw new ApiError(401,error?.message ||"Unauthorized" );
-   }
-
-})
+        req.user = user;
+        next();
+    } catch (error) {
+        console.error("JWT Verification Error:", error);
+        throw new ApiError(401, error.message || "Unauthorized");
+    }
+});
