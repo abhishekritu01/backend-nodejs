@@ -35,10 +35,8 @@ const app = express();
 // -------------2 basic server setup----------------
 
 // require('dotenv').config({path: "./.env"});
-import express from 'express';
 import dotenv from 'dotenv';
 import connectDb from '../src/db/index.js';
-import userRouter from './routes/user.routes.js';
 import {app} from './app.js';
 
 dotenv.config({

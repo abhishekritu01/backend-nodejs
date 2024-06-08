@@ -49,6 +49,7 @@ const userSchema = new Schema({
 }, {timestamps: true});
 
 // we will use this method to generate the token and not use arrow function because we need to access the user object using this
+// pre is a middleware that runs before the save method
 userSchema.pre("save", async function(next){
     if(!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 10);

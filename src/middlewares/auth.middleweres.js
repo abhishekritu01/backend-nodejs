@@ -18,7 +18,7 @@ export const verifyJwt = asyncHandler(async (req, res, next) => {
             res.send(401).json({ message: "Invalid Token" });
         }
 
-        const user = await User.findById(decodedToken._id).select("-password -refreshToken");
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
 
         if (!user) {
             return res.status(401).json({ message: "User not found" });

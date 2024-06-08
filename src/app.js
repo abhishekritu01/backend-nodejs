@@ -27,8 +27,7 @@ app.use(cookieParser());
 import userRouter from  "../src/routes/user.routes.js";
 
 // use of imported routes
+// in first use get request but we have to segregate  the routes  thats why we use app.use as middleware
 app.use("/api/v1/users", userRouter);
-
-
 
 export { app };
